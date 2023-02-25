@@ -10,7 +10,9 @@ class TodolistService {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final result = prefs.getStringList("TodoLists");
 
-    todoListId ??= await getDefaultTodoList();
+    if (todoListId == null || todoListId.isEmpty) {
+      todoListId = await getDefaultTodoList();
+    }
 
     if (result == null) {
       await addTodoList(name: "새로운 할 일 목록", color: 0xFF008CFF);
@@ -26,6 +28,23 @@ class TodolistService {
       } else {
         return TodoListModel.fromJson(jsonDecode(searchResult));
       }
+    }
+  }
+
+  Future<List<TodoListModel>> getAllTodoLists() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final result = prefs.getStringList("TodoLists");
+
+    if (result == null || result.isEmpty) {
+      await addTodoList(name: "새로운 할 일 목록", color: 0xFF008CFF);
+      return await getAllTodoLists();
+    } else {
+      List<TodoListModel> list = [];
+      for (var element in result) {
+        list.add(TodoListModel.fromJson(jsonDecode(element)));
+      }
+
+      return list;
     }
   }
 

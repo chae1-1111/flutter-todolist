@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:todolist/models/todo_model.dart';
 import 'package:todolist/models/todolist_model.dart';
+import 'package:todolist/screens/categories.dart';
 import 'package:todolist/services/todolist_service.dart';
 import 'package:todolist/widgets/input_todo.dart';
+import 'package:todolist/widgets/slide_right_route.dart';
 import 'package:todolist/widgets/todo.dart';
 
 class TodoList extends StatefulWidget {
-  const TodoList({super.key});
+  final String todoListId;
+
+  const TodoList({
+    super.key,
+    this.todoListId = "",
+  });
 
   @override
   State<TodoList> createState() => _TodoListState();
@@ -15,6 +22,7 @@ class TodoList extends StatefulWidget {
 
 class _TodoListState extends State<TodoList> {
   late Future<TodoListModel> todolist;
+  late String todoListId;
 
   bool viewNewTodo = false;
   String editTodoId = "";
@@ -22,7 +30,15 @@ class _TodoListState extends State<TodoList> {
   @override
   void initState() {
     super.initState();
-    todolist = TodolistService().getTodoListById();
+    todoListId = widget.todoListId;
+    todolist = TodolistService().getTodoListById(todoListId: todoListId);
+  }
+
+  void setTodoListId(String newTodoListId) {
+    setState(() {
+      todoListId = newTodoListId;
+      todolist = TodolistService().getTodoListById(todoListId: todoListId);
+    });
   }
 
   void hideNewTodo() {
@@ -33,7 +49,7 @@ class _TodoListState extends State<TodoList> {
 
   void updateTodoList() {
     setState(() {
-      todolist = TodolistService().getTodoListById();
+      todolist = TodolistService().getTodoListById(todoListId: todoListId);
     });
   }
 
@@ -59,6 +75,21 @@ class _TodoListState extends State<TodoList> {
     return count;
   }
 
+  Color getTextColor(int colorCode) {
+    Map<String, int> rgbMap = {
+      "R": ((colorCode - 0xFF000000) / (256 * 256)).ceil(),
+      "G": (((colorCode - 0xFF000000) / 256) % 256).ceil(),
+      "B": ((colorCode - 0xFF000000) % 256).ceil(),
+    };
+
+    // convert RGB to YIQ (사람 눈의 시신경 분포에 맞게 보정)
+    var lightness =
+        (rgbMap["R"]! * 0.299 + rgbMap["G"]! * 0.587 + rgbMap["B"]! * 0.114) /
+            255;
+
+    return lightness >= 0.5 ? Colors.black : Colors.white;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -79,12 +110,14 @@ class _TodoListState extends State<TodoList> {
             todolist: sortedList,
           );
 
+          Color textColor = getTextColor(todoList.color);
+
           return Scaffold(
             appBar: AppBar(
               title: Text(
                 todoList.name,
-                style: const TextStyle(
-                  color: Colors.black,
+                style: TextStyle(
+                  color: textColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 22,
                 ),
@@ -92,12 +125,20 @@ class _TodoListState extends State<TodoList> {
               backgroundColor: Color(todoList.color),
               elevation: 0,
               leading: IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    SlideRightRoute(
+                        page: Categories(
+                      setTodoListId: setTodoListId,
+                    )),
+                  );
+                },
                 icon: const Icon(
                   Icons.menu,
                   size: 30,
                 ),
-                color: Colors.black,
+                color: textColor,
               ),
               actions: [
                 IconButton(
@@ -106,10 +147,10 @@ class _TodoListState extends State<TodoList> {
                       viewNewTodo = true;
                     });
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.add,
                     size: 30,
-                    color: Colors.black,
+                    color: textColor,
                   ),
                 )
               ],
