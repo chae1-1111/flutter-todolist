@@ -1,57 +1,122 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:todolist/models/todo_model.dart';
+import 'package:todolist/services/todolist_service.dart';
 
-class Todo extends StatefulWidget {
-  final String title;
+class Todo extends StatelessWidget {
+  final String todoListId;
+  final Color themeColor;
+  final TodoModel todo;
+  final Function updateTodoList, setEditTodoId;
 
   const Todo({
     super.key,
-    required this.title,
+    required this.todoListId,
+    required this.themeColor,
+    required this.todo,
+    required this.updateTodoList,
+    required this.setEditTodoId,
   });
 
   @override
-  State<Todo> createState() => _TodoState();
-}
-
-class _TodoState extends State<Todo> {
-  bool isCompleted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    isCompleted = false;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 5,
-        vertical: 5,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+    return Slidable(
+      groupTag: "0",
+      key: UniqueKey(),
+      endActionPane: ActionPane(
+        extentRatio: 0.35,
+        motion: const StretchMotion(),
+        dismissible: DismissiblePane(onDismissed: () async {
+          await TodolistService()
+              .removeTodo(todoListId: todoListId, todoId: todo.id);
+          updateTodoList();
+        }),
         children: [
-          IconButton(
-            icon: Icon(
-                isCompleted ? Icons.check_box : Icons.check_box_outline_blank),
-            onPressed: () {
-              setState(() {
-                isCompleted = !isCompleted;
-              });
+          CustomSlidableAction(
+            onPressed: (context) {
+              setEditTodoId(todo.id);
             },
-            color: Colors.amber,
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Flexible(
+                  child: Icon(
+                    Icons.edit_outlined,
+                    size: 30,
+                  ),
+                )
+              ],
+            ),
           ),
-          Text(
-            widget.title,
-            style: TextStyle(
-              fontSize: 21,
-              decoration: isCompleted
-                  ? TextDecoration.lineThrough
-                  : TextDecoration.none,
-              color: isCompleted ? Colors.black54 : Colors.black,
+          CustomSlidableAction(
+            onPressed: (context) async {
+              await TodolistService()
+                  .removeTodo(todoListId: todoListId, todoId: todo.id);
+              updateTodoList();
+            },
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Flexible(
+                  child: Icon(
+                    Icons.delete_forever,
+                    size: 30,
+                  ),
+                )
+              ],
             ),
           ),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(5, 5, 20, 5),
+        child: Row(
+          children: [
+            IconButton(
+              icon: Icon(todo.isCompleted
+                  ? Icons.check_box
+                  : Icons.check_box_outline_blank),
+              onPressed: () async {
+                await TodolistService().changeCompleteTodo(
+                  todoListId: todoListId,
+                  todoId: todo.id,
+                  isCompleted: !todo.isCompleted,
+                );
+                updateTodoList();
+              },
+              color: themeColor,
+            ),
+            Flexible(
+              child: TextButton(
+                child: Text(
+                  todo.title,
+                  style: TextStyle(
+                    fontSize: 21,
+                    decoration: todo.isCompleted
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
+                    color: todo.isCompleted ? Colors.black54 : Colors.black,
+                  ),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onPressed: () async {
+                  await TodolistService().changeCompleteTodo(
+                    todoListId: todoListId,
+                    todoId: todo.id,
+                    isCompleted: !todo.isCompleted,
+                  );
+                  updateTodoList();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
