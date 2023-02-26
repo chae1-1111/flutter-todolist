@@ -6,11 +6,13 @@ import 'package:todolist/services/todolist_service.dart';
 
 class CategoryItem extends StatelessWidget {
   final TodoListModel category;
+  final bool isDefault;
   final Function setTodoListId, refreshCategories;
 
   const CategoryItem({
     super.key,
     required this.category,
+    required this.isDefault,
     required this.setTodoListId,
     required this.refreshCategories,
   });
@@ -20,27 +22,32 @@ class CategoryItem extends StatelessWidget {
     return Slidable(
       key: UniqueKey(),
       groupTag: 1,
-      startActionPane: ActionPane(
-        extentRatio: 0.17,
-        motion: const StretchMotion(),
-        children: [
-          CustomSlidableAction(
-            onPressed: (context) {},
-            backgroundColor: Colors.yellow.shade600,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Flexible(
-                  child: Icon(
-                    Icons.push_pin_outlined,
-                    size: 30,
+      startActionPane: isDefault
+          ? null
+          : ActionPane(
+              extentRatio: 0.17,
+              motion: const StretchMotion(),
+              children: [
+                CustomSlidableAction(
+                  onPressed: (context) async {
+                    await TodolistService().setDefaultTodoList(category.id);
+                    await refreshCategories();
+                  },
+                  backgroundColor: Colors.yellow.shade600,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Flexible(
+                        child: Icon(
+                          Icons.star_border,
+                          size: 30,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
       endActionPane: ActionPane(
         extentRatio: 0.35,
         motion: const StretchMotion(),
@@ -78,11 +85,17 @@ class CategoryItem extends StatelessWidget {
           ),
           CustomSlidableAction(
             onPressed: (context) async {
-              showDeleteConfirmDialog(
-                context: context,
-                todoListId: category.id,
-                refreshCategories: refreshCategories,
-              );
+              if (isDefault) {
+                showChangeDefaultDialog(
+                  context: context,
+                );
+              } else {
+                showDeleteConfirmDialog(
+                  context: context,
+                  todoListId: category.id,
+                  refreshCategories: refreshCategories,
+                );
+              }
             },
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
@@ -129,6 +142,16 @@ class CategoryItem extends StatelessWidget {
                       ),
                       const SizedBox(
                         width: 10,
+                      ),
+                      isDefault
+                          ? Icon(
+                              Icons.star,
+                              size: 23,
+                              color: Colors.yellow.shade700,
+                            )
+                          : const SizedBox.shrink(),
+                      const SizedBox(
+                        width: 5,
                       ),
                       Flexible(
                         child: Text(
@@ -201,6 +224,29 @@ class CategoryItem extends StatelessWidget {
                   await TodolistService()
                       .removeTodoList(todoListId: todoListId);
                   await refreshCategories();
+                },
+                child: const Text("확인")),
+          ],
+        );
+      },
+    );
+  }
+
+  void showChangeDefaultDialog({
+    required BuildContext context,
+  }) {
+    showDialog(
+      context: context,
+      // barrierDismissible: true,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            "즐겨찾기 목록은 삭제할 수 없습니다.",
+          ),
+          actions: [
+            TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
                 },
                 child: const Text("확인")),
           ],

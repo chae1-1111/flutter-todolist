@@ -19,18 +19,22 @@ class Categories extends StatefulWidget {
 }
 
 class _CategoriesState extends State<Categories> {
-  late Future<List<TodoListModel>> categories;
+  List<TodoListModel> categories = [];
+  String defaultCategoryId = "";
+
+  late Future<bool> isLoaded;
 
   @override
   void initState() {
     super.initState();
-    categories = TodolistService().getAllTodoLists();
+    isLoaded = refreshCategories();
   }
 
-  void refreshCategories() {
-    setState(() {
-      categories = TodolistService().getAllTodoLists();
-    });
+  Future<bool> refreshCategories() async {
+    categories = await TodolistService().getAllTodoLists();
+    defaultCategoryId = await TodolistService().getDefaultTodoList();
+    setState(() {});
+    return true;
   }
 
   @override
@@ -71,10 +75,18 @@ class _CategoriesState extends State<Categories> {
               Flexible(
                 flex: 10,
                 child: FutureBuilder(
-                  future: categories,
+                  future: isLoaded,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      var categories = snapshot.data!;
+                      // defaut TodoList 최상단으로 정렬
+                      var sortedCategories = [];
+                      for (var element in categories) {
+                        if (element.id == defaultCategoryId) {
+                          sortedCategories.insert(0, element);
+                        } else {
+                          sortedCategories.add(element);
+                        }
+                      }
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -91,9 +103,11 @@ class _CategoriesState extends State<Categories> {
                           Expanded(
                             child: SlidableAutoCloseBehavior(
                               child: ListView.separated(
-                                itemCount: categories.length,
+                                itemCount: sortedCategories.length,
                                 itemBuilder: (context, index) => CategoryItem(
-                                  category: categories[index],
+                                  category: sortedCategories[index],
+                                  isDefault: sortedCategories[index].id ==
+                                      defaultCategoryId,
                                   setTodoListId: widget.setTodoListId,
                                   refreshCategories: refreshCategories,
                                 ),
