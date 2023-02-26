@@ -1,3 +1,4 @@
+import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:todolist/models/todo_model.dart';
@@ -21,8 +22,12 @@ class TodoList extends StatefulWidget {
 }
 
 class _TodoListState extends State<TodoList> {
-  late Future<TodoListModel> todolist;
+  late Future<bool> isLoaded;
+  late TodoListModel todolist;
   late String todoListId;
+  late List<DragAndDropList> dndLists;
+
+  List<TodoModel> sortedList = [];
 
   bool viewNewTodo = false;
   String editTodoId = "";
@@ -31,14 +36,15 @@ class _TodoListState extends State<TodoList> {
   void initState() {
     super.initState();
     todoListId = widget.todoListId;
-    todolist = TodolistService().getTodoListById(todoListId: todoListId);
+    isLoaded = updateTodoList();
+    dndLists = List.generate(0, (index) {
+      return DragAndDropList(children: <DragAndDropItem>[]);
+    });
   }
 
   void setTodoListId(String newTodoListId) {
-    setState(() {
-      todoListId = newTodoListId;
-      todolist = TodolistService().getTodoListById(todoListId: todoListId);
-    });
+    todoListId = newTodoListId;
+    updateTodoList();
   }
 
   void hideNewTodo() {
@@ -47,10 +53,40 @@ class _TodoListState extends State<TodoList> {
     });
   }
 
-  void updateTodoList() {
-    setState(() {
-      todolist = TodolistService().getTodoListById(todoListId: todoListId);
+  Future<bool> updateTodoList() async {
+    todolist = await TodolistService().getTodoListById(todoListId: todoListId);
+
+    sortedList =
+        todolist.todolist.where((element) => !element.isCompleted).toList();
+    sortedList
+        .addAll(todolist.todolist.where((element) => element.isCompleted));
+
+    TodoListModel sortedTodoList = TodoListModel(
+      id: todolist.id,
+      name: todolist.name,
+      color: todolist.color,
+      todolist: sortedList,
+    );
+
+    dndLists = List.generate(1, (index) {
+      return DragAndDropList(
+        children: <DragAndDropItem>[
+          for (var todo in sortedTodoList.todolist)
+            DragAndDropItem(
+              // child: Text(todo.title),
+              child: Todo(
+                todoListId: "2",
+                themeColor: Color(sortedTodoList.color),
+                todo: todo,
+                updateTodoList: updateTodoList,
+                setEditTodoId: setEditTodoId,
+              ),
+            ),
+        ],
+      );
     });
+    setState(() {});
+    return true;
   }
 
   void setEditTodoId(String todoId) {
@@ -93,20 +129,20 @@ class _TodoListState extends State<TodoList> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: todolist,
+      future: isLoaded,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           // 완료된 Todo를 리스트 하단으로 정렬
-          List<TodoModel> sortedList = snapshot.data!.todolist
+          List<TodoModel> sortedList = todolist.todolist
               .where((element) => !element.isCompleted)
               .toList();
           sortedList.addAll(
-              snapshot.data!.todolist.where((element) => element.isCompleted));
+              todolist.todolist.where((element) => element.isCompleted));
 
           TodoListModel todoList = TodoListModel(
-            id: snapshot.data!.id,
-            name: snapshot.data!.name,
-            color: snapshot.data!.color,
+            id: todolist.id,
+            name: todolist.name,
+            color: todolist.color,
             todolist: sortedList,
           );
 
@@ -162,6 +198,7 @@ class _TodoListState extends State<TodoList> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(25, 10, 25, 30),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -184,48 +221,20 @@ class _TodoListState extends State<TodoList> {
                     const Divider(
                       thickness: 1,
                     ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: SlidableAutoCloseBehavior(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(children: [
-                                for (var todo in todoList.todolist)
-                                  Column(
-                                    children: [
-                                      todo.id != editTodoId
-                                          ? Todo(
-                                              todoListId: todoList.id,
-                                              themeColor: Color(todoList.color),
-                                              todo: todo,
-                                              updateTodoList: updateTodoList,
-                                              setEditTodoId: setEditTodoId,
-                                            )
-                                          : InputTodo.editTodo(
-                                              todoListId: todoList.id,
-                                              defaultValue: todo.title,
-                                              todoId: todo.id,
-                                              themeColor: Color(todoList.color),
-                                              updateTodoList: updateTodoList,
-                                              hideInputTodo: resetEditTodoId,
-                                            ),
-                                      const Divider(
-                                        thickness: 1,
-                                      )
-                                    ],
-                                  ),
-                                viewNewTodo
-                                    ? InputTodo.newTodo(
-                                        todoListId: todoList.id,
-                                        themeColor: Color(todoList.color),
-                                        hideInputTodo: hideNewTodo,
-                                        updateTodoList: updateTodoList,
-                                      )
-                                    : const SizedBox.shrink(),
-                              ])
-                            ],
-                          ),
+                    viewNewTodo
+                        ? InputTodo.newTodo(
+                            todoListId: todoList.id,
+                            themeColor: Color(todoList.color),
+                            hideInputTodo: hideNewTodo,
+                            updateTodoList: updateTodoList,
+                          )
+                        : const SizedBox.shrink(),
+                    SlidableAutoCloseBehavior(
+                      child: Flexible(
+                        child: DragAndDropLists(
+                          children: dndLists,
+                          onItemReorder: _onItemReorder,
+                          onListReorder: (oldListIndex, newListIndex) {},
                         ),
                       ),
                     ),
@@ -250,5 +259,43 @@ class _TodoListState extends State<TodoList> {
         }
       },
     );
+  }
+
+  int getUncompletedCount() {
+    return todolist.todolist
+        .where(
+          (element) => !element.isCompleted,
+        )
+        .length;
+  }
+
+  void _onItemReorder(
+    int oldItemIndex,
+    int oldListIndex,
+    int newItemIndex,
+    int newListIndex,
+  ) async {
+    if (newItemIndex == oldItemIndex || newItemIndex >= getUncompletedCount()) {
+      return;
+    }
+
+    String prevTodoId;
+
+    if (newItemIndex == 0) {
+      prevTodoId = "";
+    } else if (newItemIndex > oldItemIndex) {
+      prevTodoId = sortedList[newItemIndex].id;
+    } else {
+      prevTodoId = sortedList[newItemIndex - 1].id;
+    }
+
+    await TodolistService().reOrderTodo(
+      todoListId: todoListId,
+      todoId: sortedList[oldItemIndex].id,
+      prevTodoId: prevTodoId,
+    );
+    await updateTodoList();
+
+    setState(() {});
   }
 }

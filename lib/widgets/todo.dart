@@ -20,102 +20,104 @@ class Todo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Slidable(
-      groupTag: "0",
-      key: UniqueKey(),
-      endActionPane: ActionPane(
-        extentRatio: 0.35,
-        motion: const StretchMotion(),
-        dismissible: DismissiblePane(onDismissed: () async {
-          await TodolistService()
-              .removeTodo(todoListId: todoListId, todoId: todo.id);
-          updateTodoList();
-        }),
-        children: [
-          CustomSlidableAction(
-            onPressed: (context) {
-              setEditTodoId(todo.id);
-            },
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Flexible(
-                  child: Icon(
-                    Icons.edit_outlined,
-                    size: 30,
-                  ),
-                )
-              ],
-            ),
-          ),
-          CustomSlidableAction(
-            onPressed: (context) async {
-              await TodolistService()
-                  .removeTodo(todoListId: todoListId, todoId: todo.id);
-              updateTodoList();
-            },
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Flexible(
-                  child: Icon(
-                    Icons.delete_forever,
-                    size: 30,
-                  ),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 5, 20, 5),
-        child: Row(
+    return Scrollable(
+      viewportBuilder: (context, position) => Slidable(
+        groupTag: "0",
+        key: UniqueKey(),
+        endActionPane: ActionPane(
+          extentRatio: 0.35,
+          motion: const StretchMotion(),
+          dismissible: DismissiblePane(onDismissed: () async {
+            await TodolistService()
+                .removeTodo(todoListId: todoListId, todoId: todo.id);
+            updateTodoList();
+          }),
           children: [
-            IconButton(
-              icon: Icon(todo.isCompleted
-                  ? Icons.check_box
-                  : Icons.check_box_outline_blank),
-              onPressed: () async {
-                await TodolistService().changeCompleteTodo(
-                  todoListId: todoListId,
-                  todoId: todo.id,
-                  isCompleted: !todo.isCompleted,
-                );
+            CustomSlidableAction(
+              onPressed: (context) {
+                setEditTodoId(todo.id);
+              },
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Flexible(
+                    child: Icon(
+                      Icons.edit_outlined,
+                      size: 30,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            CustomSlidableAction(
+              onPressed: (context) async {
+                await TodolistService()
+                    .removeTodo(todoListId: todoListId, todoId: todo.id);
                 updateTodoList();
               },
-              color: themeColor,
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Flexible(
+                    child: Icon(
+                      Icons.delete_forever,
+                      size: 30,
+                    ),
+                  )
+                ],
+              ),
             ),
-            Flexible(
-              child: TextButton(
-                child: Text(
-                  todo.title,
-                  style: TextStyle(
-                    fontSize: 21,
-                    decoration: todo.isCompleted
-                        ? TextDecoration.lineThrough
-                        : TextDecoration.none,
-                    color: todo.isCompleted ? Colors.black54 : Colors.black,
-                  ),
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(5, 5, 20, 5),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(todo.isCompleted
+                    ? Icons.check_box
+                    : Icons.check_box_outline_blank),
                 onPressed: () async {
                   await TodolistService().changeCompleteTodo(
                     todoListId: todoListId,
                     todoId: todo.id,
                     isCompleted: !todo.isCompleted,
                   );
-                  updateTodoList();
+                  await updateTodoList();
                 },
+                color: themeColor,
               ),
-            ),
-          ],
+              Flexible(
+                child: TextButton(
+                  child: Text(
+                    todo.title,
+                    style: TextStyle(
+                      fontSize: 21,
+                      decoration: todo.isCompleted
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                      color: todo.isCompleted ? Colors.black54 : Colors.black,
+                    ),
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onPressed: () async {
+                    await TodolistService().changeCompleteTodo(
+                      todoListId: todoListId,
+                      todoId: todo.id,
+                      isCompleted: !todo.isCompleted,
+                    );
+                    await updateTodoList();
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -110,7 +110,7 @@ class TodolistService {
     try {
       TodoListModel targetTodoList =
           await getTodoListById(todoListId: todoListId);
-      targetTodoList.todolist.add(newTodo);
+      targetTodoList.todolist.insert(0, newTodo);
       modifyTodoList(targetTodoList);
     } catch (e) {
       throw Error();
@@ -189,6 +189,47 @@ class TodolistService {
     } catch (e) {
       throw Error();
     }
+  }
+
+  Future reOrderTodo({
+    required String todoListId,
+    required String todoId,
+    required String prevTodoId,
+  }) async {
+    TodoListModel targetTodoList =
+        await getTodoListById(todoListId: todoListId);
+
+    List<TodoModel> newTodolist = [];
+    if (prevTodoId.isEmpty) {
+      newTodolist.add(
+        targetTodoList.todolist.firstWhere(
+          (element) => element.id == todoId,
+        ),
+      );
+    }
+
+    for (var element
+        in targetTodoList.todolist.where((element) => element.id != todoId)) {
+      {
+        newTodolist.add(element);
+        if (element.id == prevTodoId) {
+          newTodolist.add(
+            targetTodoList.todolist.firstWhere(
+              (element) => element.id == todoId,
+            ),
+          );
+        }
+      }
+    }
+
+    TodoListModel reOrderedTodoList = TodoListModel(
+      id: targetTodoList.id,
+      name: targetTodoList.name,
+      color: targetTodoList.color,
+      todolist: newTodolist,
+    );
+
+    await modifyTodoList(reOrderedTodoList);
   }
 
   Future removeCompletedTodo({
