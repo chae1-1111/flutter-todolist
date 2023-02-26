@@ -82,6 +82,8 @@ class _InputTodoState extends State<InputTodo> {
               cursorColor: Colors.black,
               decoration: InputDecoration(
                 hintText: "새로운 할 일",
+                fillColor: Colors.grey.shade50,
+                filled: true,
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: widget.themeColor),
                 ),

@@ -2,23 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:todolist/constances/custom_colors.dart';
 import 'package:todolist/services/todolist_service.dart';
 
-class RegistCategory extends StatefulWidget {
+class CategoryEditor extends StatefulWidget {
   final Function refreshCategories;
+  final bool newCategory;
+  String? todoListId, name;
+  int? color;
 
-  const RegistCategory({
+  CategoryEditor.newCategory({
     super.key,
     required this.refreshCategories,
+    this.newCategory = true,
+  });
+
+  CategoryEditor.editCategory({
+    super.key,
+    required this.refreshCategories,
+    required this.todoListId,
+    required this.name,
+    required this.color,
+    this.newCategory = false,
   });
 
   @override
-  State<RegistCategory> createState() => _RegistCategoryState();
+  State<CategoryEditor> createState() => _CategoryEditorState();
 }
 
-class _RegistCategoryState extends State<RegistCategory> {
+class _CategoryEditorState extends State<CategoryEditor> {
   final newTodoListName = TextEditingController();
   final customColors = CustomColors.colors;
+  late int selectedColor;
 
-  int selectedColor = 0;
+  @override
+  void initState() {
+    super.initState();
+    selectedColor = widget.color ?? CustomColors.colors[0][0];
+    newTodoListName.text = widget.name ?? "";
+  }
 
   @override
   void dispose() {
@@ -32,8 +51,8 @@ class _RegistCategoryState extends State<RegistCategory> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        title: const Text(
-          "새로운 목록",
+        title: Text(
+          widget.newCategory ? "새로운 목록" : "수정",
         ),
         leading: TextButton(
           onPressed: () {
@@ -50,9 +69,18 @@ class _RegistCategoryState extends State<RegistCategory> {
           TextButton(
             onPressed: () async {
               if (newTodoListName.text.isNotEmpty) {
-                await TodolistService().addTodoList(
+                if (widget.newCategory) {
+                  await TodolistService().addTodoList(
                     name: newTodoListName.text,
-                    color: customColors[selectedColor]);
+                    color: selectedColor,
+                  );
+                } else {
+                  await TodolistService().modifyTodoListById(
+                    todoListId: widget.todoListId!,
+                    name: newTodoListName.text,
+                    color: selectedColor,
+                  );
+                }
                 await widget.refreshCategories();
                 Navigator.pop(context);
               }
@@ -143,78 +171,45 @@ class _RegistCategoryState extends State<RegistCategory> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            for (var i = 0; i < customColors.length / 2; i++)
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(100),
+                        for (var arColor in customColors)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 10,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                for (var color in arColor)
+                                  Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(100),
+                                        ),
+                                        border: Border.all(
+                                          color: color == selectedColor
+                                              ? Colors.grey.shade400
+                                              : Colors.white,
+                                          width: 3,
+                                        )),
+                                    child: IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          selectedColor = color;
+                                        });
+                                      },
+                                      padding: EdgeInsets.zero,
+                                      icon: Icon(
+                                        Icons.circle,
+                                        size: 45,
+                                        color: Color(color),
+                                      ),
                                     ),
-                                    border: Border.all(
-                                      color: i == selectedColor
-                                          ? Colors.grey.shade400
-                                          : Colors.white,
-                                      width: 3,
-                                    )),
-                                child: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      selectedColor = i;
-                                    });
-                                  },
-                                  padding: EdgeInsets.zero,
-                                  icon: Icon(
-                                    Icons.circle,
-                                    size: 45,
-                                    color: Color(customColors[i]),
                                   ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            for (var i = 0; i < customColors.length / 2; i++)
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(100),
-                                    ),
-                                    border: Border.all(
-                                      color: i +
-                                                  (customColors.length / 2)
-                                                      .ceil() ==
-                                              selectedColor
-                                          ? Colors.grey.shade400
-                                          : Colors.white,
-                                      width: 3,
-                                    )),
-                                child: IconButton(
-                                  padding: EdgeInsets.zero,
-                                  onPressed: () {
-                                    setState(() {
-                                      selectedColor =
-                                          i + (customColors.length / 2).ceil();
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.circle,
-                                    size: 45,
-                                    color: Color(customColors[
-                                        i + (customColors.length / 2).ceil()]),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   )

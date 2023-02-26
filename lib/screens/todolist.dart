@@ -168,7 +168,7 @@ class _TodoListState extends State<TodoList> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                            "${todoList.todolist.length} Total, ${getCompletedCount(todoList.todolist)} Completed"),
+                            "전체 ${todoList.todolist.length}, 완료됨 ${getCompletedCount(todoList.todolist)}"),
                         TextButton(
                           onPressed: () async {
                             await TodolistService()

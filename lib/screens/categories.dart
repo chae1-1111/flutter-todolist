@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:todolist/models/todolist_model.dart';
-import 'package:todolist/screens/new_category.dart';
+import 'package:todolist/screens/category_editor.dart';
+import 'package:todolist/screens/settings.dart';
 import 'package:todolist/services/todolist_service.dart';
 import 'package:todolist/widgets/category.dart';
 
@@ -40,7 +42,14 @@ class _CategoriesState extends State<Categories> {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const Settings(),
+                ),
+              );
+            },
             icon: const Icon(
               Icons.settings,
             ),
@@ -80,15 +89,18 @@ class _CategoriesState extends State<Categories> {
                             height: 20,
                           ),
                           Expanded(
-                            child: ListView.separated(
-                              itemCount: categories.length,
-                              itemBuilder: (context, index) => CategoryItem(
-                                category: categories[index],
-                                setTodoListId: widget.setTodoListId,
-                              ),
-                              separatorBuilder: (context, index) =>
-                                  const SizedBox(
-                                height: 20,
+                            child: SlidableAutoCloseBehavior(
+                              child: ListView.separated(
+                                itemCount: categories.length,
+                                itemBuilder: (context, index) => CategoryItem(
+                                  category: categories[index],
+                                  setTodoListId: widget.setTodoListId,
+                                  refreshCategories: refreshCategories,
+                                ),
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(
+                                  height: 20,
+                                ),
                               ),
                             ),
                           ),
@@ -110,7 +122,7 @@ class _CategoriesState extends State<Categories> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => RegistCategory(
+                              builder: (context) => CategoryEditor.newCategory(
                                     refreshCategories: refreshCategories,
                                   ),
                               fullscreenDialog: true),

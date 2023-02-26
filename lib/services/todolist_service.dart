@@ -70,6 +70,24 @@ class TodolistService {
     }
   }
 
+  Future removeTodoList({required String todoListId}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final result = prefs.getStringList("TodoLists");
+    List<String> newTodoLists = [];
+
+    if (result == null) {
+      await prefs.setStringList("TodoLists", []);
+      throw Error();
+    } else {
+      for (int i = 0; i < result.length; i++) {
+        if (jsonDecode(result[i])["id"] != todoListId) {
+          newTodoLists.add(result[i]);
+        }
+      }
+      prefs.setStringList("TodoLists", newTodoLists);
+    }
+  }
+
   Future<String> getDefaultTodoList() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString("defaultTodoList") ?? "";
@@ -208,6 +226,22 @@ class TodolistService {
       }
       prefs.setStringList("TodoLists", result);
     }
+  }
+
+  Future modifyTodoListById({
+    required String todoListId,
+    required String name,
+    required int color,
+  }) async {
+    TodoListModel targetTodoList =
+        await getTodoListById(todoListId: todoListId);
+    TodoListModel modifiedTodoList = TodoListModel(
+      id: todoListId,
+      name: name,
+      color: color,
+      todolist: targetTodoList.todolist,
+    );
+    await modifyTodoList(modifiedTodoList);
   }
 
   String encodeTodo(TodoModel todo) {
