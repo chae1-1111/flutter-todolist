@@ -5,6 +5,7 @@ import 'package:todolist/models/todo_model.dart';
 import 'package:todolist/models/todolist_model.dart';
 import 'package:todolist/screens/categories.dart';
 import 'package:todolist/services/todolist_service.dart';
+import 'package:todolist/statics/get_text_color.dart';
 import 'package:todolist/widgets/input_todo.dart';
 import 'package:todolist/widgets/slide_right_route.dart';
 import 'package:todolist/widgets/todo.dart';
@@ -75,7 +76,7 @@ class _TodoListState extends State<TodoList> {
             DragAndDropItem(
               // child: Text(todo.title),
               child: Todo(
-                todoListId: "2",
+                todoListId: sortedTodoList.id,
                 themeColor: Color(sortedTodoList.color),
                 todo: todo,
                 updateTodoList: updateTodoList,
@@ -111,21 +112,6 @@ class _TodoListState extends State<TodoList> {
     return count;
   }
 
-  Color getTextColor(int colorCode) {
-    Map<String, int> rgbMap = {
-      "R": ((colorCode - 0xFF000000) / (256 * 256)).ceil(),
-      "G": (((colorCode - 0xFF000000) / 256) % 256).ceil(),
-      "B": ((colorCode - 0xFF000000) % 256).ceil(),
-    };
-
-    // convert RGB to YIQ (사람 눈의 시신경 분포에 맞게 보정)
-    var lightness =
-        (rgbMap["R"]! * 0.299 + rgbMap["G"]! * 0.587 + rgbMap["B"]! * 0.114) /
-            255;
-
-    return lightness >= 0.5 ? Colors.black : Colors.white;
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -146,7 +132,7 @@ class _TodoListState extends State<TodoList> {
             todolist: sortedList,
           );
 
-          Color textColor = getTextColor(todoList.color);
+          Color textColor = ColorMethods.getTextColor(todoList.color);
 
           return Scaffold(
             appBar: AppBar(

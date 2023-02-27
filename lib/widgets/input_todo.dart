@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todolist/services/todolist_service.dart';
+import 'package:todolist/widgets/input_todo_detail.dart';
 
 class InputTodo extends StatefulWidget {
   final String todoListId, defaultValue, type, todoId;
@@ -103,14 +104,19 @@ class _InputTodoState extends State<InputTodo> {
           ),
           IconButton(
             onPressed: () {
-              if (todoText.text.isNotEmpty) {
-                saveInputTodo();
-              }
+              showModalBottomSheet(
+                backgroundColor: Colors.transparent,
+                context: context,
+                builder: (context) {
+                  return const InputTodoDetail();
+                },
+                isScrollControlled: true,
+              );
             },
             icon: Icon(
-              Icons.check,
+              Icons.add_box,
               color: widget.themeColor,
-              size: 35,
+              size: 30,
             ),
           ),
         ],

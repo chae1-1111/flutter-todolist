@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:todolist/constances/custom_colors.dart';
+import 'package:todolist/statics/custom_colors.dart';
 import 'package:todolist/services/todolist_service.dart';
 
 class CategoryEditor extends StatefulWidget {

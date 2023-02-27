@@ -120,22 +120,28 @@ class TodolistService {
   Future changeCompleteTodo({
     required String todoListId,
     required String todoId,
-    required bool isCompleted,
   }) async {
     try {
       TodoListModel targetTodoList =
           await getTodoListById(todoListId: todoListId);
-      for (int i = 0; i < targetTodoList.todolist.length; i++) {
-        if (targetTodoList.todolist[i].id == todoId) {
-          targetTodoList.todolist[i] = TodoModel(
-            id: targetTodoList.todolist[i].id,
-            title: targetTodoList.todolist[i].title,
-            isCompleted: isCompleted,
-          );
-          break;
-        }
-      }
-      modifyTodoList(targetTodoList);
+      List<TodoModel> newTodos = targetTodoList.todolist
+          .map(
+            (element) => TodoModel(
+              id: element.id,
+              title: element.title,
+              isCompleted: element.id == todoId
+                  ? !element.isCompleted
+                  : element.isCompleted,
+            ),
+          )
+          .toList();
+      TodoListModel modifiedTodoList = TodoListModel(
+        id: targetTodoList.id,
+        name: targetTodoList.name,
+        color: targetTodoList.color,
+        todolist: newTodos,
+      );
+      modifyTodoList(modifiedTodoList);
     } catch (e) {
       throw Error();
     }

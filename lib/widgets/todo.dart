@@ -85,7 +85,6 @@ class Todo extends StatelessWidget {
                   await TodolistService().changeCompleteTodo(
                     todoListId: todoListId,
                     todoId: todo.id,
-                    isCompleted: !todo.isCompleted,
                   );
                   await updateTodoList();
                 },
@@ -110,7 +109,6 @@ class Todo extends StatelessWidget {
                     await TodolistService().changeCompleteTodo(
                       todoListId: todoListId,
                       todoId: todo.id,
-                      isCompleted: !todo.isCompleted,
                     );
                     await updateTodoList();
                   },
