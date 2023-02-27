@@ -3,28 +3,32 @@ import 'package:todolist/services/todolist_service.dart';
 import 'package:todolist/widgets/input_todo_detail.dart';
 
 class InputTodo extends StatefulWidget {
-  final String todoListId, defaultValue, type, todoId;
+  final String todoListId, type;
+  String? todoId, defaultTitle, defaultMemo;
+  DateTime? defaultDeadline;
   final Color themeColor;
   final Function updateTodoList;
   final Function hideInputTodo;
 
-  const InputTodo.newTodo({
+  InputTodo.newTodo({
     super.key,
     required this.todoListId,
-    this.defaultValue = "",
+    this.defaultTitle,
     this.type = "newTodo",
-    this.todoId = "",
+    this.todoId,
     required this.themeColor,
     required this.updateTodoList,
     required this.hideInputTodo,
   });
 
-  const InputTodo.editTodo({
+  InputTodo.editTodo({
     super.key,
-    required this.todoListId,
-    required this.defaultValue,
     this.type = "editTodo",
+    required this.todoListId,
     required this.todoId,
+    required this.defaultTitle,
+    this.defaultMemo,
+    this.defaultDeadline,
     required this.themeColor,
     required this.updateTodoList,
     required this.hideInputTodo,
@@ -40,7 +44,9 @@ class _InputTodoState extends State<InputTodo> {
   @override
   void initState() {
     super.initState();
-    todoText.text = widget.defaultValue;
+    if (widget.type == "editTodo") {
+      todoText.text = widget.defaultTitle!;
+    }
   }
 
   @override
@@ -56,10 +62,11 @@ class _InputTodoState extends State<InputTodo> {
         todoTitle: todoText.text,
       );
     } else if (widget.type == "editTodo") {
-      await TodolistService().modifyTodoTitle(
-          todoListId: widget.todoListId,
-          todoId: widget.todoId,
-          newTitle: todoText.text);
+      await TodolistService().modifyTodo(
+        todoListId: widget.todoListId,
+        todoId: widget.todoId!,
+        newTitle: todoText.text,
+      );
     }
 
     todoText.clear();
@@ -77,11 +84,13 @@ class _InputTodoState extends State<InputTodo> {
             child: TextField(
               autofocus: true,
               controller: todoText,
+              maxLength: 100,
               style: const TextStyle(
                 fontSize: 20,
               ),
               cursorColor: Colors.black,
               decoration: InputDecoration(
+                counterText: "",
                 hintText: "새로운 할 일",
                 fillColor: Colors.grey.shade50,
                 filled: true,
@@ -90,6 +99,42 @@ class _InputTodoState extends State<InputTodo> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: widget.themeColor),
+                ),
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    if (widget.type == "newTodo" || widget.type == "editTodo") {
+                      widget.hideInputTodo();
+                      showModalBottomSheet(
+                        backgroundColor: Colors.transparent,
+                        context: context,
+                        builder: (context) {
+                          if (widget.type == "newTodo") {
+                            return InputTodoDetail.newTodo(
+                              todoListId: widget.todoListId,
+                              updateTodoList: widget.updateTodoList,
+                            );
+                          } else {
+                            return InputTodoDetail.editTodo(
+                              todoListId: widget.todoListId,
+                              updateTodoList: widget.updateTodoList,
+                              todoId: widget.todoId!,
+                              defaultTitle: todoText.text.isNotEmpty
+                                  ? todoText.text
+                                  : widget.defaultTitle,
+                              defaultMemo: widget.defaultMemo,
+                              defaultDeadline: widget.defaultDeadline,
+                            );
+                          }
+                        },
+                        isScrollControlled: true,
+                      );
+                    }
+                  },
+                  icon: Icon(
+                    Icons.add_box,
+                    color: widget.themeColor,
+                    size: 30,
+                  ),
                 ),
               ),
               onTapOutside: (event) {
@@ -100,23 +145,6 @@ class _InputTodoState extends State<InputTodo> {
                   widget.updateTodoList();
                 }
               },
-            ),
-          ),
-          IconButton(
-            onPressed: () {
-              showModalBottomSheet(
-                backgroundColor: Colors.transparent,
-                context: context,
-                builder: (context) {
-                  return const InputTodoDetail();
-                },
-                isScrollControlled: true,
-              );
-            },
-            icon: Icon(
-              Icons.add_box,
-              color: widget.themeColor,
-              size: 30,
             ),
           ),
         ],

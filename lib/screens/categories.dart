@@ -40,6 +40,7 @@ class _CategoriesState extends State<Categories> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -61,99 +62,94 @@ class _CategoriesState extends State<Categories> {
         ],
         leading: const SizedBox.shrink(),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
+      body: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: 20,
+          vertical: 10,
         ),
-        child: Padding(
-          padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: 20,
-            vertical: 10,
-          ),
-          child: Column(
-            children: [
-              Flexible(
-                flex: 10,
-                child: FutureBuilder(
-                  future: isLoaded,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      // defaut TodoList 최상단으로 정렬
-                      var sortedCategories = [];
-                      for (var element in categories) {
-                        if (element.id == defaultCategoryId) {
-                          sortedCategories.insert(0, element);
-                        } else {
-                          sortedCategories.add(element);
-                        }
+        child: Column(
+          children: [
+            Flexible(
+              flex: 10,
+              child: FutureBuilder(
+                future: isLoaded,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    // defaut TodoList 최상단으로 정렬
+                    var sortedCategories = [];
+                    for (var element in categories) {
+                      if (element.id == defaultCategoryId) {
+                        sortedCategories.insert(0, element);
+                      } else {
+                        sortedCategories.add(element);
                       }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "할일 목록",
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "할일 목록",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
                           ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Expanded(
-                            child: SlidableAutoCloseBehavior(
-                              child: ListView.separated(
-                                itemCount: sortedCategories.length,
-                                itemBuilder: (context, index) => CategoryItem(
-                                  category: sortedCategories[index],
-                                  isDefault: sortedCategories[index].id ==
-                                      defaultCategoryId,
-                                  setTodoListId: widget.setTodoListId,
-                                  refreshCategories: refreshCategories,
-                                ),
-                                separatorBuilder: (context, index) =>
-                                    const SizedBox(
-                                  height: 20,
-                                ),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Expanded(
+                          child: SlidableAutoCloseBehavior(
+                            child: ListView.separated(
+                              itemCount: sortedCategories.length,
+                              itemBuilder: (context, index) => CategoryItem(
+                                category: sortedCategories[index],
+                                isDefault: sortedCategories[index].id ==
+                                    defaultCategoryId,
+                                setTodoListId: widget.setTodoListId,
+                                refreshCategories: refreshCategories,
+                              ),
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(
+                                height: 20,
                               ),
                             ),
                           ),
-                        ],
-                      );
-                    } else {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                  },
-                ),
-              ),
-              Flexible(
-                flex: 1,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => CategoryEditor.newCategory(
-                                    refreshCategories: refreshCategories,
-                                  ),
-                              fullscreenDialog: true),
-                        );
-                      },
-                      child: const Text(
-                        "목록 생성",
-                        style: TextStyle(
-                          fontSize: 18,
                         ),
-                      ),
-                    )
-                  ],
-                ),
+                      ],
+                    );
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
               ),
-            ],
-          ),
+            ),
+            Flexible(
+              flex: 1,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => CategoryEditor.newCategory(
+                                  refreshCategories: refreshCategories,
+                                ),
+                            fullscreenDialog: true),
+                      );
+                    },
+                    child: const Text(
+                      "목록 생성",
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

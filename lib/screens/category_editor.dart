@@ -125,11 +125,13 @@ class _CategoryEditorState extends State<CategoryEditor> {
                       },
                       controller: newTodoListName,
                       textAlign: TextAlign.center,
+                      maxLength: 100,
                       style: const TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.w600,
                       ),
                       decoration: InputDecoration(
+                        counterText: "",
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 20,

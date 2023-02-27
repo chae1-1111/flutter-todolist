@@ -132,7 +132,7 @@ class CategoryItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Flexible(
-                  flex: 9,
+                  flex: 20,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -171,11 +171,16 @@ class CategoryItem extends StatelessWidget {
                   ),
                 ),
                 Flexible(
-                  flex: 1,
+                  flex: 5,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        "${category.todolist.length}",
+                        "${category.todolist.where(
+                              (element) => !element.isCompleted,
+                            ).length > 99 ? "99+" : category.todolist.where(
+                              (element) => !element.isCompleted,
+                            ).length}",
                         style: const TextStyle(
                           fontSize: 17,
                         ),

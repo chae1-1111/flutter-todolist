@@ -101,10 +101,14 @@ class TodolistService {
   Future addTodo({
     required String todoListId,
     required String todoTitle,
+    String? todoMemo,
+    DateTime? todoDeadLine,
   }) async {
     TodoModel newTodo = TodoModel(
       id: const Uuid().v1(),
       title: todoTitle,
+      memo: todoMemo,
+      deadLine: todoDeadLine,
       isCompleted: false,
     );
     try {
@@ -129,6 +133,8 @@ class TodolistService {
             (element) => TodoModel(
               id: element.id,
               title: element.title,
+              memo: element.memo,
+              deadLine: element.deadLine,
               isCompleted: element.id == todoId
                   ? !element.isCompleted
                   : element.isCompleted,
@@ -168,11 +174,12 @@ class TodolistService {
     }
   }
 
-  Future modifyTodoTitle({
-    required String todoListId,
-    required String todoId,
-    required String newTitle,
-  }) async {
+  Future modifyTodo(
+      {required String todoListId,
+      required String todoId,
+      required String newTitle,
+      String? newMemo,
+      DateTime? newDeadLine}) async {
     try {
       TodoListModel targetTodoList =
           await getTodoListById(todoListId: todoListId);
@@ -185,6 +192,8 @@ class TodolistService {
             return TodoModel(
               id: element.id,
               title: newTitle,
+              memo: newMemo,
+              deadLine: newDeadLine,
               isCompleted: element.isCompleted,
             );
           }
@@ -296,6 +305,8 @@ class TodolistService {
 
     result += '"id": "${todo.id}",';
     result += '"title": "${todo.title}",';
+    result += todo.memo != null ? '"memo": "${todo.memo}",' : "";
+    result += todo.deadLine != null ? '"deadLine": "${todo.deadLine}",' : "";
     result += '"isCompleted": ${todo.isCompleted}';
 
     return "$result}";

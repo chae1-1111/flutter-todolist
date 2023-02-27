@@ -10,8 +10,23 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: TodoList(),
+    return MaterialApp(
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSwatch(
+          backgroundColor: Colors.white,
+        ),
+        textButtonTheme: const TextButtonThemeData(
+          style: ButtonStyle(
+            overlayColor: MaterialStatePropertyAll(Colors.transparent),
+          ),
+        ),
+        iconButtonTheme: const IconButtonThemeData(
+          style: ButtonStyle(
+            overlayColor: MaterialStatePropertyAll(Colors.transparent),
+          ),
+        ),
+      ),
+      home: const TodoList(),
     );
   }
 }
