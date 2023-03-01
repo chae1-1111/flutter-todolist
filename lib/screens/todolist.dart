@@ -29,6 +29,7 @@ class _TodoListState extends State<TodoList> {
   late List<DragAndDropList> dndLists;
 
   List<TodoModel> sortedList = [];
+  Color textColor = Colors.black;
 
   bool viewNewTodo = false;
   String editTodoId = "";
@@ -95,12 +96,15 @@ class _TodoListState extends State<TodoList> {
                       todo: todo,
                       updateTodoList: updateTodoList,
                       setEditTodoId: setEditTodoId,
+                      scrollToBottom: scrollToBottom,
                     ),
             ),
         ],
       );
     });
-    setState(() {});
+    setState(() {
+      textColor = ColorMethods.getTextColor(todolist.color);
+    });
     return true;
   }
 
@@ -120,80 +124,85 @@ class _TodoListState extends State<TodoList> {
     return count;
   }
 
+  void scrollToBottom() {
+    scrollCont.animateTo(
+      scrollCont.position.pixels > scrollCont.position.maxScrollExtent / 2
+          ? scrollCont.position.maxScrollExtent
+          : scrollCont.position.maxScrollExtent / 2,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.ease,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: isLoaded,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          // 완료된 Todo를 리스트 하단으로 정렬
-          List<TodoModel> sortedList = todolist.todolist
-              .where((element) => !element.isCompleted)
-              .toList();
-          sortedList.addAll(
-              todolist.todolist.where((element) => element.isCompleted));
-
-          TodoListModel todoList = TodoListModel(
-            id: todolist.id,
-            name: todolist.name,
-            color: todolist.color,
-            todolist: sortedList,
-          );
-
-          Color textColor = ColorMethods.getTextColor(todoList.color);
-
-          return Scaffold(
-            backgroundColor: Colors.white,
-            appBar: AppBar(
-              title: Text(
-                todoList.name,
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 22,
-                ),
-              ),
-              backgroundColor: Color(todoList.color),
-              elevation: 0,
-              leading: IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    SlideRightRoute(
-                        page: Categories(
-                      setTodoListId: setTodoListId,
-                    )),
-                  );
-                },
-                icon: const Icon(
-                  Icons.menu,
-                  size: 30,
-                ),
-                color: textColor,
-              ),
-              actions: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      viewNewTodo = true;
-                    });
-                    scrollCont.animateTo(
-                      0,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.ease,
-                    );
-                  },
-                  icon: Icon(
-                    Icons.add,
-                    size: 30,
+    return Scaffold(
+      backgroundColor: Theme.of(context).primaryColor,
+      appBar: AppBar(
+        backgroundColor: Color(todolist.color),
+        elevation: 0,
+        title: FutureBuilder(
+            future: isLoaded,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!) {
+                return Text(
+                  todolist.name,
+                  style: TextStyle(
                     color: textColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 22,
                   ),
-                )
-              ],
+                );
+              } else {
+                return const Text("할일 목록");
+              }
+            }),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              SlideRightRoute(
+                page: Categories(
+                  setTodoListId: setTodoListId,
+                ),
+              ),
+            );
+          },
+          icon: const Icon(
+            Icons.menu,
+            size: 30,
+          ),
+          color: textColor,
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                viewNewTodo = true;
+              });
+              if (todolist.todolist.isNotEmpty) {
+                scrollCont.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.ease,
+                );
+              }
+            },
+            icon: Icon(
+              Icons.add,
+              size: 30,
+              color: textColor,
             ),
-            body: Padding(
-              padding: const EdgeInsets.fromLTRB(25, 10, 25, 30),
-              child: Column(
+          )
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(25, 10, 25, 30),
+        child: FutureBuilder(
+          future: isLoaded,
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data!) {
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   sortedList.isEmpty
@@ -202,11 +211,11 @@ class _TodoListState extends State<TodoList> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                                "전체 ${todoList.todolist.length}, 완료됨 ${getCompletedCount(todoList.todolist)}"),
+                                "전체 ${todolist.todolist.length}, 완료됨 ${getCompletedCount(todolist.todolist)}"),
                             TextButton(
                               onPressed: () async {
                                 await TodolistService().removeCompletedTodo(
-                                    todoListId: todoList.id);
+                                    todoListId: todolist.id);
                                 updateTodoList();
                               },
                               child: const Text(
@@ -222,8 +231,8 @@ class _TodoListState extends State<TodoList> {
                         ),
                   viewNewTodo
                       ? InputTodo.newTodo(
-                          todoListId: todoList.id,
-                          themeColor: Color(todoList.color),
+                          todoListId: todolist.id,
+                          themeColor: Color(todolist.color),
                           hideInputTodo: hideInputTodo,
                           updateTodoList: updateTodoList,
                         )
@@ -257,24 +266,15 @@ class _TodoListState extends State<TodoList> {
                           ),
                         ),
                 ],
-              ),
-            ),
-          );
-        } else {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text(
-                "",
-              ),
-              backgroundColor: Colors.white,
-              elevation: 0,
-            ),
-            body: const Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-      },
+              );
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
+      ),
     );
   }
 

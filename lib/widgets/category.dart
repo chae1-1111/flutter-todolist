@@ -120,7 +120,7 @@ class CategoryItem extends StatelessWidget {
         },
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: Theme.of(context).canvasColor,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Padding(

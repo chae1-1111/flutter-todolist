@@ -12,9 +12,8 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSwatch(
-          backgroundColor: Colors.white,
-        ),
+        primaryColor: Colors.white,
+        canvasColor: Colors.grey.shade200,
         textButtonTheme: const TextButtonThemeData(
           style: ButtonStyle(
             overlayColor: MaterialStatePropertyAll(Colors.transparent),

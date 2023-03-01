@@ -14,6 +14,7 @@ class InputTodoDetail extends StatefulWidget {
     required this.todoListId,
     this.todoId = "",
     required this.updateTodoList,
+    this.defaultTitle,
   });
 
   InputTodoDetail.editTodo({
@@ -46,8 +47,8 @@ class _InputTodoDetailState extends State<InputTodoDetail> {
   @override
   void initState() {
     super.initState();
+    todoTitleCont.text = widget.defaultTitle ?? "";
     if (widget.type == "editTodo") {
-      todoTitleCont.text = widget.defaultTitle ?? "";
       todoMemoCont.text = widget.defaultMemo ?? "";
       if (widget.defaultDeadline != null) {
         todoDeadlineDate =
@@ -82,7 +83,7 @@ class _InputTodoDetailState extends State<InputTodoDetail> {
     return Container(
       height: MediaQuery.of(context).viewInsets.bottom + 400,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Theme.of(context).canvasColor,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(15),
         ),

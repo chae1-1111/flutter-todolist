@@ -86,7 +86,7 @@ class _InputTodoState extends State<InputTodo> {
               controller: todoText,
               maxLength: 100,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 21,
               ),
               cursorColor: Colors.black,
               decoration: InputDecoration(
@@ -112,6 +112,9 @@ class _InputTodoState extends State<InputTodo> {
                             return InputTodoDetail.newTodo(
                               todoListId: widget.todoListId,
                               updateTodoList: widget.updateTodoList,
+                              defaultTitle: todoText.text.isNotEmpty
+                                  ? todoText.text
+                                  : null,
                             );
                           } else {
                             return InputTodoDetail.editTodo(
@@ -131,7 +134,7 @@ class _InputTodoState extends State<InputTodo> {
                     }
                   },
                   icon: Icon(
-                    Icons.add_box,
+                    Icons.more_vert,
                     color: widget.themeColor,
                     size: 30,
                   ),

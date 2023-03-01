@@ -102,7 +102,7 @@ class _CategoryEditorState extends State<CategoryEditor> {
         builder: (context, constraint) => SingleChildScrollView(
           child: Container(
             constraints: BoxConstraints(minHeight: constraint.maxHeight),
-            color: Colors.grey.shade200,
+            color: Theme.of(context).canvasColor,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 20,
@@ -111,9 +111,9 @@ class _CategoryEditorState extends State<CategoryEditor> {
               child: Column(
                 children: [
                   Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -136,7 +136,7 @@ class _CategoryEditorState extends State<CategoryEditor> {
                           horizontal: 10,
                           vertical: 20,
                         ),
-                        fillColor: Colors.grey.shade200,
+                        fillColor: Theme.of(context).canvasColor,
                         filled: true,
                         focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(
@@ -162,9 +162,9 @@ class _CategoryEditorState extends State<CategoryEditor> {
                     height: 30,
                   ),
                   Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -192,7 +192,7 @@ class _CategoryEditorState extends State<CategoryEditor> {
                                         border: Border.all(
                                           color: color == selectedColor
                                               ? Colors.grey.shade400
-                                              : Colors.white,
+                                              : Colors.transparent,
                                           width: 3,
                                         )),
                                     child: IconButton(

@@ -9,7 +9,7 @@ class Todo extends StatelessWidget {
   final String todoListId;
   final Color themeColor;
   final TodoModel todo;
-  final Function updateTodoList, setEditTodoId;
+  final Function updateTodoList, setEditTodoId, scrollToBottom;
 
   const Todo({
     super.key,
@@ -18,6 +18,7 @@ class Todo extends StatelessWidget {
     required this.todo,
     required this.updateTodoList,
     required this.setEditTodoId,
+    required this.scrollToBottom,
   });
 
   @override
@@ -109,6 +110,9 @@ class Todo extends StatelessWidget {
                     todoListId: todoListId,
                     todoId: todo.id,
                   );
+                  if (!todo.isCompleted) {
+                    scrollToBottom();
+                  }
                   await updateTodoList();
                 },
                 color: themeColor,
@@ -153,11 +157,27 @@ class Todo extends StatelessWidget {
                     ],
                   ),
                   onPressed: () async {
-                    await TodolistService().changeCompleteTodo(
-                      todoListId: todoListId,
-                      todoId: todo.id,
-                    );
-                    await updateTodoList();
+                    if ((todo.memo != null && todo.memo != "") ||
+                        todo.deadLine != null) {
+                      showModalBottomSheet(
+                        backgroundColor: Colors.transparent,
+                        context: context,
+                        builder: (context) {
+                          return InputTodoDetail.editTodo(
+                            todoListId: todoListId,
+                            todoId: todo.id,
+                            defaultTitle: todo.title,
+                            defaultMemo: todo.memo,
+                            defaultDeadline: todo.deadLine,
+                            updateTodoList: updateTodoList,
+                          );
+                        },
+                        isScrollControlled: true,
+                      );
+                    } else {
+                      await setEditTodoId(todo.id);
+                      await updateTodoList();
+                    }
                   },
                 ),
               ),
