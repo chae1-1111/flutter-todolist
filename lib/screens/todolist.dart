@@ -24,7 +24,8 @@ class TodoList extends StatefulWidget {
 
 class _TodoListState extends State<TodoList> {
   late Future<bool> isLoaded;
-  late TodoListModel todolist;
+  late TodoListModel todolist =
+      TodoListModel(id: "", name: "", color: 0xffffffff, todolist: []);
   late String todoListId;
   late List<DragAndDropList> dndLists;
 
@@ -41,9 +42,9 @@ class _TodoListState extends State<TodoList> {
     super.initState();
     todoListId = widget.todoListId;
     isLoaded = updateTodoList();
-    dndLists = List.generate(0, (index) {
-      return DragAndDropList(children: <DragAndDropItem>[]);
-    });
+    // dndLists = List.generate(0, (index) {
+    //   return DragAndDropList(children: <DragAndDropItem>[]);
+    // });
   }
 
   void setTodoListId(String newTodoListId) {
